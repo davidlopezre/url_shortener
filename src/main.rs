@@ -1,29 +1,24 @@
-#![allow(unreachable_code)]
-use rouille;
-use rouille::router;
+use rusqlite::{Connection, Result};
+use url_shortener::Url;
 
-use std::iter::repeat_with;
-fn main() {
-    println!("Now listening on localhost:8000");
-    rouille::start_server("localhost:8000", move |request| {
-        router!(request,
-            (GET) (/{hash: String}) => {
-                rouille::Response::redirect_303("https://www.rust-lang.org/")
-            },
 
-            (GET) (/api/urls/{hash: String}) => {
-                rouille::Response::empty_404()
-            },
+fn main() -> Result<()> {
+    let conn = Connection::open("url_shortener.db")?;
 
-            (POST) (/api/urls) => {
-                let s: String = repeat_with(fastrand::alphanumeric).take(10).collect();
-                println!("{}", s);
-                rouille::Response::empty_404()
-            },
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS url (
+                  location        TEXT PRIMARY KEY,
+                  target          TEXT NOT NULL,
+                  created_at      TEXT
+                  )",
+        [],
+    )?;
 
-            // The code block is called if none of the other blocks matches the request.
-            // We return an empty response with a 404 status code.
-            _ => rouille::Response::empty_404()
-        )
-    });
+   if let Ok(Some(url))  = Url::fetch_from_db(conn, "some_location".to_string()) {
+        println!("found url: {:?}", url)
+   } else {
+       println!("none found")
+   }
+
+    Ok(())
 }

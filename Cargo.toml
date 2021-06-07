@@ -9,3 +9,4 @@ edition = "2018"
 [dependencies]
 rouille = "3.1.1"
 fastrand = "1.4.1"
+rusqlite = "0.25.3"
