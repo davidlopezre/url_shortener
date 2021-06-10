@@ -14,7 +14,7 @@ fn main() -> Result<()> {
         [],
     )?;
 
-   if let Ok(Some(url))  = Url::fetch_from_db(conn, "some_location".to_string()) {
+   if let Ok(Some(url))  = Url::fetch_from_db(&conn, "some_location".to_string()) {
         println!("found url: {:?}", url)
    } else {
        println!("none found")

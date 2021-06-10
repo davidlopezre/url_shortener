@@ -11,4 +11,5 @@ rouille = "3.1.1"
 fastrand = "1.4.1"
 rusqlite = {version = "0.25.3", features = ["chrono"]}
 chrono = "0.4"
+scopeguard = "1.1.0"
 
