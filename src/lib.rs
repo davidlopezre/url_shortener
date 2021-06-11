@@ -1,7 +1,8 @@
 use chrono::{offset::Utc, DateTime};
 use rusqlite::{params, Connection, Result, Row};
+use serde::Serialize;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Serialize)]
 pub struct Url {
     location: String,
     target: String,
