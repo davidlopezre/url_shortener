@@ -1,11 +1,11 @@
-use rusqlite::{Connection, Result, Row, params};
-use chrono::{DateTime, offset::Utc};
+use chrono::{offset::Utc, DateTime};
+use rusqlite::{params, Connection, Result, Row};
 
 #[derive(Debug, PartialEq)]
 pub struct Url {
     location: String,
     target: String,
-    created_at: DateTime<Utc>
+    created_at: DateTime<Utc>,
 }
 
 impl Url {
@@ -14,16 +14,17 @@ impl Url {
         Url {
             target,
             location,
-            created_at
+            created_at,
         }
     }
 
     pub fn post_to_db(&self, connection: &Connection) -> Result<()> {
-        let mut stmt = connection.prepare("INSERT INTO url(location, target, created_at) VALUES(?, ?, ?)")?;
+        let mut stmt =
+            connection.prepare("INSERT INTO url(location, target, created_at) VALUES(?, ?, ?)")?;
         let result = stmt.execute(params![self.location, self.target, self.created_at]);
         match result {
             Ok(_) => Ok(()),
-            Err(e) => Err(e)
+            Err(e) => Err(e),
         }
     }
 
@@ -31,18 +32,17 @@ impl Url {
         Ok(Url {
             location: row.get(0)?,
             target: row.get(1)?,
-            created_at: row.get(2)?
+            created_at: row.get(2)?,
         })
     }
 
     pub fn fetch_from_db(connection: &Connection, location: String) -> Result<Option<Url>> {
-        let mut stmt = connection.prepare("SELECT location, target, created_at FROM url WHERE location=?")?;
+        let mut stmt =
+            connection.prepare("SELECT location, target, created_at FROM url WHERE location=?")?;
 
-        let mut url_iter = stmt.query_map([location], |row| {
-            Url::from_row(row)
-        })?;
+        let mut url_iter = stmt.query_map([location], |row| Url::from_row(row))?;
 
-       url_iter.next().transpose()
+        url_iter.next().transpose()
     }
 }
 
@@ -52,18 +52,20 @@ mod tests {
 
     use super::*;
     use std::fs;
+    use std::iter::repeat_with;
 
-    fn initialise_test_db() -> (&'static str, fn()) {
-        if let Ok(_) = fs::copy("fixtures/test.db", "fixtures/test_1.db") {
-            let cleanup = || { 
-                match fs::remove_file("fixtures/test_1.db") {
+    fn initialise_test_db() -> (String, Box<dyn FnOnce()>) {
+        let test_file_slug :String = repeat_with(fastrand::alphanumeric).take(10).collect();
+        let test_file_name: String = format!("fixtures/{}", test_file_slug);
+        match fs::copy("fixtures/test.db", &test_file_name) {
+            Ok(_) => {
+                return (test_file_name.clone(), Box::new(|| match fs::remove_file(test_file_name) {
                     Err(_) => panic!("failed to cleanup"),
-                    _ => return  
-                }
-            };
-            return ("fixtures/test_1.db", cleanup);
+                    _ => return,
+                }));
+            }
+            Err(e) => panic!("failed to cleanup: {}", e),
         }
-        panic!("failed to set up test db");
     }
 
     #[test]
@@ -72,7 +74,10 @@ mod tests {
         let conn = Connection::open(test_db)?;
         let mut expected_url = Url::new("test_location_1".to_string(), "test_target_1".to_string());
         expected_url.created_at = Utc.ymd(2021, 6, 8).and_hms_milli(11, 29, 11, 124);
-        assert_eq!(Url::fetch_from_db(&conn, "test_location_1".to_string())?.unwrap(), expected_url);
+        assert_eq!(
+            Url::fetch_from_db(&conn, "test_location_1".to_string())?.unwrap(),
+            expected_url
+        );
         cleanup();
         Ok(())
     }
