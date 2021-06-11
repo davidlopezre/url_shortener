@@ -49,6 +49,7 @@ impl Url {
 #[cfg(test)]
 mod tests {
     use chrono::TimeZone;
+    use scopeguard::defer;
 
     use super::*;
     use std::fs;
@@ -64,13 +65,15 @@ mod tests {
                     _ => return,
                 }));
             }
-            Err(e) => panic!("failed to cleanup: {}", e),
+            Err(e) => panic!("failed to set up test : {}", e),
         }
     }
 
     #[test]
     fn test_fetch_from_db() -> Result<()> {
         let (test_db, cleanup) = initialise_test_db();
+        defer!(cleanup());
+        
         let conn = Connection::open(test_db)?;
         let mut expected_url = Url::new("test_location_1".to_string(), "test_target_1".to_string());
         expected_url.created_at = Utc.ymd(2021, 6, 8).and_hms_milli(11, 29, 11, 124);
@@ -78,32 +81,33 @@ mod tests {
             Url::fetch_from_db(&conn, "test_location_1".to_string())?.unwrap(),
             expected_url
         );
-        cleanup();
         Ok(())
     }
 
     #[test]
     fn test_post_to_db() -> Result<()> {
         let (test_db, cleanup) = initialise_test_db();
+        defer!(cleanup());
+
         let conn = Connection::open(test_db)?;
         let url = Url::new("test_location_2".to_string(), "test_target_2".to_string());
         let result = url.post_to_db(&conn);
         assert_eq!(result, Ok(()));
         Url::fetch_from_db(&conn, "test_location_2".to_string())?.unwrap();
-        cleanup();
         Ok(())
     }
 
     #[test]
     fn test_bad_post_to_db() -> Result<()> {
         let (test_db, cleanup) = initialise_test_db();
+        defer!(cleanup());
+
         let conn = Connection::open(test_db)?;
         // existing entry, can't post because of constraint
         let url = Url::new("test_location_1".to_string(), "test_target_1".to_string());
         if let Ok(_) = url.post_to_db(&conn) {
             panic!("should have returned an error");
         }
-        cleanup();
         Ok(())
     }
 }
