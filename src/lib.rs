@@ -1,3 +1,5 @@
+pub mod config;
+
 use chrono::{offset::Utc, DateTime};
 use rusqlite::{params, Connection, Result, Row};
 use serde::Serialize;

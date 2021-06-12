@@ -3,10 +3,12 @@ use core::panic;
 use rusqlite::{Connection};
 use url_shortener::Url;
 use rouille::{Response, router};
-
+use url_shortener::config;
 
 fn main() {
-    init();
+    let cfg = config::Config::new();
+    config::initialise_app(&cfg).unwrap_or_else(|e|panic!("failed to initialise_app: {}", e));
+
     println!("Now listening on localhost:8000");
     rouille::start_server("localhost:8000", move |request| {
     
@@ -29,23 +31,4 @@ fn main() {
         _ => rouille::Response::empty_404()
     )
 });
-}
-
-fn init() {
-    let conn = Connection::open("url_shortener.db");
-    if let Err(e) = conn {
-        panic!("{}", e.to_string());
-    }
-    let conn = conn.unwrap();
-
-    if let Err(e) = conn.execute(
-        "CREATE TABLE IF NOT EXISTS url (
-                  location        TEXT PRIMARY KEY,
-                  target          TEXT NOT NULL,
-                  created_at      TEXT
-                  )",
-        [],
-    ) {
-        panic!("{}", e.to_string());
-    }
 }
