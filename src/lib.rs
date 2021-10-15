@@ -59,14 +59,17 @@ mod tests {
     use std::iter::repeat_with;
 
     fn initialise_test_db() -> (String, Box<dyn FnOnce()>) {
-        let test_file_slug :String = repeat_with(fastrand::alphanumeric).take(10).collect();
+        let test_file_slug: String = repeat_with(fastrand::alphanumeric).take(10).collect();
         let test_file_name: String = format!("fixtures/{}", test_file_slug);
         match fs::copy("fixtures/test.db", &test_file_name) {
             Ok(_) => {
-                return (test_file_name.clone(), Box::new(|| match fs::remove_file(test_file_name) {
-                    Err(_) => panic!("failed to cleanup"),
-                    _ => return,
-                }));
+                return (
+                    test_file_name.clone(),
+                    Box::new(|| match fs::remove_file(test_file_name) {
+                        Err(_) => panic!("failed to cleanup"),
+                        _ => return,
+                    }),
+                );
             }
             Err(e) => panic!("failed to set up test : {}", e),
         }
@@ -76,7 +79,7 @@ mod tests {
     fn test_fetch_from_db() -> Result<()> {
         let (test_db, cleanup) = initialise_test_db();
         defer!(cleanup());
-        
+
         let conn = Connection::open(test_db)?;
         let mut expected_url = Url::new("test_location_1".to_string(), "test_target_1".to_string());
         expected_url.created_at = Utc.ymd(2021, 6, 8).and_hms_milli(11, 29, 11, 124);
@@ -86,6 +89,21 @@ mod tests {
         );
         Ok(())
     }
+
+    // #[test]
+    // fn test_fetch_from_db_invalid_row() -> std::result::Result<(), String> {
+    //     let (test_db, cleanup) = initialise_test_db();
+    //     defer!(cleanup());
+
+    //     let conn = Connection::open(test_db)?;
+    //     let mut expected_url = Url::new("test_location_1".to_string(), "test_target_1".to_string());
+    //     expected_url.created_at = Utc.ymd(2021, 6, 8).and_hms_milli(11, 29, 11, 124);
+    //     match Url::fetch_from_db(&conn, "test_location_invalid".to_string()) {
+    //         Err() => Err(""),
+    //         Ok() => Ok(),
+    //     }
+    //     Ok(())
+    // }
 
     #[test]
     fn test_post_to_db() -> Result<()> {
