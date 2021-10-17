@@ -90,20 +90,20 @@ mod tests {
         Ok(())
     }
 
-    // #[test]
-    // fn test_fetch_from_db_invalid_row() -> std::result::Result<(), String> {
-    //     let (test_db, cleanup) = initialise_test_db();
-    //     defer!(cleanup());
+    #[test]
+    fn test_fetch_from_db_invalid_row_should_return_conversion_err() -> Result<()> {
+        let (test_db, cleanup) = initialise_test_db();
+        defer!(cleanup());
 
-    //     let conn = Connection::open(test_db)?;
-    //     let mut expected_url = Url::new("test_location_1".to_string(), "test_target_1".to_string());
-    //     expected_url.created_at = Utc.ymd(2021, 6, 8).and_hms_milli(11, 29, 11, 124);
-    //     match Url::fetch_from_db(&conn, "test_location_invalid".to_string()) {
-    //         Err() => Err(""),
-    //         Ok() => Ok(),
-    //     }
-    //     Ok(())
-    // }
+        let conn = Connection::open(test_db)?;
+        match Url::fetch_from_db(&conn, "test_location_invalid".to_string()) {
+            Err(e) => {
+                assert_eq!("Conversion error from type Text at index: 2, premature end of input", e.to_string());
+                Ok(())
+            },
+            _ => panic!("test failed because expected an error here")
+        }
+    }
 
     #[test]
     fn test_post_to_db() -> Result<()> {
