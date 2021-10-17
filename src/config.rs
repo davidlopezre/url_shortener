@@ -14,11 +14,15 @@ impl Config {
 
 #[cfg(test)]
 mod tests {
+
     use super::Config;
     use std::env;
+    use serial_test::serial;
 
     #[test]
+    #[serial]
     fn test_new_config_db_path_env_var() -> Result<(), String> {
+        env::remove_var("URL_SHORTENER_DB_PATH");
         env::set_var("URL_SHORTENER_DB_PATH", "test_path.db");
         let cfg = Config::new();
         assert_eq!("test_path.db", cfg.db_path);
@@ -26,7 +30,9 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_new_config_default_db_path() -> Result<(), String> {
+        env::remove_var("URL_SHORTENER_DB_PATH");
         let cfg = Config::new();
         assert_eq!("url_shortener.db", cfg.db_path);
         Ok(())

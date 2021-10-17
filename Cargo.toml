@@ -14,3 +14,5 @@ chrono = {version = "0.4", features = ["serde"]}
 scopeguard = "1.1.0"
 serde = { version = "1.0.126", features = ["derive"] }
 
+[dev-dependencies]
+serial_test = "0.5.1"
