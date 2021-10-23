@@ -21,6 +21,14 @@ impl Url {
         }
     }
 
+    pub fn location(&self) -> &str {
+        &self.location
+    }
+
+    pub fn target(&self) -> &str {
+        &self.target
+    }
+
     pub fn post_to_db(&self, connection: &Connection) -> Result<()> {
         let mut stmt =
             connection.prepare("INSERT INTO url(location, target, created_at) VALUES(?, ?, ?)")?;
