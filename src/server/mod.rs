@@ -23,7 +23,7 @@ pub fn initialise_server() {
     });
 }
 
-fn display_url_helper(url: rusqlite::Result<Option<Url>>, on_existing_url: &Fn(&Url) -> Response) -> Response {
+fn display_url_helper(url: rusqlite::Result<Option<Url>>, on_existing_url: &dyn Fn(&Url) -> Response) -> Response {
     match url {
         Ok(Some(u)) => on_existing_url(&u),
         Ok(None) => Response::empty_404(),
