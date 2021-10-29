@@ -2,18 +2,18 @@ pub mod config;
 
 use chrono::{offset::Utc, DateTime};
 use rusqlite::{params, Connection, Result, Row};
-use serde::Serialize;
+use serde::{Serialize, Deserialize};
 
-#[derive(Debug, PartialEq, Serialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Url {
     location: String,
     target: String,
-    created_at: DateTime<Utc>,
+    created_at: Option<DateTime<Utc>>,
 }
 
 impl Url {
     pub fn new(location: String, target: String) -> Url {
-        let created_at = Utc::now();
+        let created_at = Some(Utc::now());
         Url {
             target,
             location,
@@ -29,7 +29,8 @@ impl Url {
         &self.target
     }
 
-    pub fn post_to_db(&self, connection: &Connection) -> Result<()> {
+    pub fn post_to_db(&mut self, connection: &Connection) -> Result<()> {
+        self.created_at = Some(Utc::now());
         let mut stmt =
             connection.prepare("INSERT INTO url(location, target, created_at) VALUES(?, ?, ?)")?;
         let result = stmt.execute(params![self.location, self.target, self.created_at]);
@@ -90,7 +91,7 @@ mod tests {
 
         let conn = Connection::open(test_db)?;
         let mut expected_url = Url::new("test_location_1".to_string(), "test_target_1".to_string());
-        expected_url.created_at = Utc.ymd(2021, 6, 8).and_hms_milli(11, 29, 11, 124);
+        expected_url.created_at = Some(Utc.ymd(2021, 6, 8).and_hms_milli(11, 29, 11, 124));
         assert_eq!(
             Url::fetch_from_db(&conn, "test_location_1".to_string())?.unwrap(),
             expected_url
@@ -119,7 +120,7 @@ mod tests {
         defer!(cleanup());
 
         let conn = Connection::open(test_db)?;
-        let url = Url::new("test_location_2".to_string(), "test_target_2".to_string());
+        let mut url = Url::new("test_location_2".to_string(), "test_target_2".to_string());
         let result = url.post_to_db(&conn);
         assert_eq!(result, Ok(()));
         Url::fetch_from_db(&conn, "test_location_2".to_string())?.unwrap();
@@ -133,7 +134,7 @@ mod tests {
 
         let conn = Connection::open(test_db)?;
         // existing entry, can't post because of constraint
-        let url = Url::new("test_location_1".to_string(), "test_target_1".to_string());
+        let mut url = Url::new("test_location_1".to_string(), "test_target_1".to_string());
         if let Ok(_) = url.post_to_db(&conn) {
             panic!("should have returned an error");
         }

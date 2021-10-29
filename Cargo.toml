@@ -13,6 +13,7 @@ rusqlite = {version = "0.25.3", features = ["chrono"]}
 chrono = {version = "0.4", features = ["serde"]}
 scopeguard = "1.1.0"
 serde = { version = "1.0.126", features = ["derive"] }
+serde_json = "1.0.59"
 
 [dev-dependencies]
 serial_test = "0.5.1"
