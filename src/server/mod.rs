@@ -19,7 +19,7 @@ pub fn initialise_server() {
                 display_url_redirect(url)
             },
             (POST) (/api/url) => {
-                execute(&|| {
+                execute(|| {
                     let conn = Connection::open("url_shortener.db").unwrap();
                     let mut url = get_url_request_body(request)?;
                     url.post_to_db(&conn)?;
@@ -32,7 +32,10 @@ pub fn initialise_server() {
     });
 }
 
-fn execute(f: &dyn Fn() -> Result<Response, Error>) -> Response {
+fn execute<F>(f: F) -> Response
+where
+    F: FnOnce() -> Result<Response, Error>,
+{
     let result = f();
     result.unwrap_or_else(|e| internal_error_response(e.to_string()))
 }
