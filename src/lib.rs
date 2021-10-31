@@ -1,8 +1,9 @@
 pub mod config;
+pub mod error;
 
 use chrono::{offset::Utc, DateTime};
 use rusqlite::{params, Connection, Result, Row};
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Url {
@@ -107,10 +108,13 @@ mod tests {
         let conn = Connection::open(test_db)?;
         match Url::fetch_from_db(&conn, "test_location_invalid".to_string()) {
             Err(e) => {
-                assert_eq!("Conversion error from type Text at index: 2, premature end of input", e.to_string());
+                assert_eq!(
+                    "Conversion error from type Text at index: 2, premature end of input",
+                    e.to_string()
+                );
                 Ok(())
-            },
-            _ => panic!("test failed because expected an error here")
+            }
+            _ => panic!("test failed because expected an error here"),
         }
     }
 

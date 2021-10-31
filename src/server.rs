@@ -1,8 +1,8 @@
-use std::fmt::{self};
 use std::{borrow::Cow, io::Read};
 
 use rouille::{router, Request, Response};
 use rusqlite::Connection;
+use url_shortener::error::Error;
 use url_shortener::Url;
 
 pub fn initialise_server() {
@@ -48,43 +48,6 @@ fn get_url_request_body(request: &Request) -> Result<Url, Error> {
         return Ok(url);
     }
     Err(Error::CustomError(String::from("request body missing")))
-}
-
-#[derive(Debug)]
-enum Error {
-    CustomError(String),
-    RusqliteError(rusqlite::Error),
-    IOError(std::io::Error),
-    SerdeError(serde_json::Error),
-}
-
-impl From<rusqlite::Error> for Error {
-    fn from(error: rusqlite::Error) -> Self {
-        Error::RusqliteError(error)
-    }
-}
-
-impl From<std::io::Error> for Error {
-    fn from(error: std::io::Error) -> Self {
-        Error::IOError(error)
-    }
-}
-
-impl From<serde_json::Error> for Error {
-    fn from(error: serde_json::Error) -> Self {
-        Error::SerdeError(error)
-    }
-}
-
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Error::CustomError(s) => write!(f, "{}", s),
-            Error::RusqliteError(inner) => write!(f, "{}", inner),
-            Error::IOError(inner) => write!(f, "{}", inner),
-            Error::SerdeError(inner) => write!(f, "{}", inner),
-        }
-    }
 }
 
 fn display_url_helper(
