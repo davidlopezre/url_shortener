@@ -91,17 +91,13 @@ fn display_url_helper(
     match url {
         Ok(Some(u)) => on_existing_url(&u),
         Ok(None) => Response::empty_404(),
-        Err(e) => {
-            println!("error: {}", e.to_string());
-            internal_error_response(e.to_string())
-        }
+        Err(e) => internal_error_response(e.to_string()),
     }
 }
 
 fn created_response(url: &Url) -> Response {
     let mut response = Response::json(&url);
     response.status_code = 201;
-    println!("done!");
     response
 }
 
