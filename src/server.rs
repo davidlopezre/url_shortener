@@ -48,7 +48,7 @@ fn get_url_request_body(request: &Request) -> Result<Url, Error> {
         let url: Url = serde_json::from_str(&buf)?;
         return Ok(url);
     }
-    Err(Error::CustomError(String::from("request body missing")))
+    Err(Error::RequestBodyMissing)
 }
 
 fn display_url_helper(

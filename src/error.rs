@@ -1,6 +1,6 @@
 #[derive(Debug)]
 pub enum Error {
-    CustomError(String),
+    RequestBodyMissing,
     RusqliteError(rusqlite::Error),
     IOError(std::io::Error),
     SerdeError(serde_json::Error),
@@ -27,7 +27,7 @@ impl From<serde_json::Error> for Error {
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Error::CustomError(s) => write!(f, "{}", s),
+            Error::RequestBodyMissing => write!(f, "request body is missing"),
             Error::RusqliteError(inner) => write!(f, "{}", inner),
             Error::IOError(inner) => write!(f, "{}", inner),
             Error::SerdeError(inner) => write!(f, "{}", inner),
