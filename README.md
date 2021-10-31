@@ -24,6 +24,25 @@ cargo run
 ```
 
 ## Endpoints
-*GET /api/url/{location}*: Returns a URL object in JSON format
 
-*GET /{location}*: Redirects to configured target
+### Get URL in JSON format
+
+*GET /api/url/{location}*
+
+### Redirect to URL 
+
+*GET /{location}*
+
+Redirects to configured target
+
+### Create a new URL
+
+*POST /api/url*
+
+Sample body
+```
+{
+    "location":"test_location_2",
+    "target":"https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+}
+```
