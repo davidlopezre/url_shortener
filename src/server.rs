@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::{borrow::Cow, io::Read};
 
 use rouille::{router, Request, Response};
@@ -44,6 +45,9 @@ where
 fn get_url_request_body(request: &Request) -> Result<Url, Error> {
     if let Some(mut request_body) = request.data() {
         let mut buf = String::new();
+        if buf.is_empty() {
+            return Err(Error::RequestBodyMissing);
+        }
         request_body.read_to_string(&mut buf)?;
         let url: Url = serde_json::from_str(&buf)?;
         return Ok(url);
@@ -69,7 +73,8 @@ fn created_response(url: &Url) -> Response {
 }
 
 fn internal_error_response(text: String) -> Response {
-    let mut response = Response::text(format!("server error: {}", text));
+    let error_object = HashMap::from([("error", text)]);
+    let mut response = Response::json(&error_object);
     response.status_code = 500;
     response
 }
