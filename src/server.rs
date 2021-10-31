@@ -5,7 +5,7 @@ use rusqlite::Connection;
 use url_shortener::error::Error;
 use url_shortener::Url;
 
-pub fn initialise_server() {
+pub fn initialise_server() -> ! {
     println!("Now listening on localhost:8000");
     rouille::start_server("localhost:8000", move |request| {
         router!(request,

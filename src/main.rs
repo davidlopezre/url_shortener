@@ -1,11 +1,10 @@
-use core::panic;
 use url_shortener::{config, error::Error};
 
 mod server;
 
-fn main() {
+fn main() -> Result<(), Error> {
     let cfg = config::Config::new();
-    initialise_app(&cfg).unwrap_or_else(|e| panic!("failed to initialise_app: {}", e));
+    initialise_app(&cfg)?;
     server::initialise_server();
 }
 
